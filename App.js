@@ -6,6 +6,7 @@ import {
   TextInput,
   Button,
   Alert,
+  Image,
 } from "react-native";
 import {
   Text,
@@ -80,6 +81,13 @@ export default function App() {
                 <Title style={styles.title}>
                   {weather.city.name}, {weather.city.country}
                 </Title>
+                {/* Flag visning */}
+                <Image
+                  source={{
+                    uri: `https://flagsapi.com/${weather.city.country}/shiny/64.png`,
+                  }}
+                  style={styles.flag}
+                />
                 <Paragraph style={styles.paragraph}>
                   {`Temperatur: ${weather.list[0].main.temp}°C
                   \nBeskrivelse: ${weather.list[0].weather[0].description} 
@@ -105,7 +113,9 @@ export default function App() {
                     {new Date(item.dt_txt).toLocaleDateString()}
                   </Title>
                   <Paragraph style={styles.paragraph}>
-                    {`Temperatur: ${item.main.temp}°C\nH: ${item.main.temp_max}°C - L: ${item.main.temp_min}°C\nBeskrivelse: ${item.weather[0].description}`}
+                    {`Temperatur: ${item.main.temp}°C
+                    \nH: ${item.main.temp_max}°C - L: ${item.main.temp_min}°C
+                    \nBeskrivelse: ${item.weather[0].description}`}
                   </Paragraph>
                 </Card.Content>
               </Card>
@@ -153,5 +163,10 @@ const styles = StyleSheet.create({
   },
   paragraph: {
     fontSize: 18,
+  },
+  flag: {
+    width: 64,
+    height: 64,
+    marginBottom: 10,
   },
 });
