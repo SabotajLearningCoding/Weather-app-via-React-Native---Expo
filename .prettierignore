@@ -1,0 +1,4 @@
+# Ignorer specifikke filtyper
+*.min.js
+*.map
+*App.js
