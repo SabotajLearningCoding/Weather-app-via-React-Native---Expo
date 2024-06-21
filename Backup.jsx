@@ -4,11 +4,11 @@ import { Text, Card, Title, Paragraph, ActivityIndicator, } from "react-native-p
 import axios from "axios";
 
 export default function App() {
-  const [city, setCity] = useState(""); // Default city set to empty string
-  const [weather, setWeather] = useState(null); // State to store weather data
-  const [loading, setLoading] = useState(false); // State to handle loading
+  const [city, setCity] = useState(""); // Gemmer bynavnet
+  const [weather, setWeather] = useState(null); // State til at gemme vejrdata
+  const [loading, setLoading] = useState(false); // State til at håndtere indlæsning
 
-  // Import images correctly with require
+  // Importerer billeder korrekt med require
   const Cloud = require("./assets/forecast/cloud.png");
   const Rain = require("./assets/forecast/rain.png");
   const Sun = require("./assets/forecast/sun.png");
@@ -16,33 +16,33 @@ export default function App() {
   const Sky = require("./assets/forecast/clear-sky.png");
   const Location = require("./assets/location-pin.png");
 
-  // Function to fetch weather data from OpenWeatherMap API
+  // Funktion til at hente vejrdata fra OpenWeatherMap API
   const fetchWeather = async (city) => {
-    setLoading(true); // Start loading
+    setLoading(true); // Starter indlæsning
     try {
       const response = await axios.get(
         "https://api.openweathermap.org/data/2.5/forecast/",
         {
           params: {
-            q: city, // City name
-            appid: "8401040824d06dc01137a49ace1e6cb7", // API key
-            units: "metric", // Units in metric system
+            q: city, // Bynavn
+            appid: "8401040824d06dc01137a49ace1e6cb7", // API-nøgle
+            units: "metric", // Enheder i metrisk system
           },
         }
       );
-      setWeather(response.data); // Store weather data in state
+      setWeather(response.data); // Gemmer vejrdata i state
     } catch (error) {
       console.error(error);
       Alert.alert(
-        "Error",
-        "Could not fetch weather information. Check city name and try again."
+        "Fejl",
+        "Kunne ikke hente vejrinformation. Tjek bynavnet og prøv igen."
       );
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false); // Stopper indlæsning
     }
   };
 
-  // Function to fetch location data based on IP address
+  // Funktion til at hente lokalitetsdata baseret på IP-adresse
   const fetchLocation = async () => {
     try {
       const response = await axios.get(
@@ -53,21 +53,21 @@ export default function App() {
       fetchWeather(location.city);
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not fetch location information.");
+      Alert.alert("Fejl", "Kunne ikke hente lokalitetsinformation.");
     }
   };
 
-  // Use useEffect hook to fetch location and weather data on initial load
+  // Bruger useEffect-hook til at hente lokalitet og vejrdata ved indledende indlæsning
   useEffect(() => {
     fetchLocation();
   }, []);
 
-  // Function to filter forecasts for 12:00 PM for the next 5 days
+  // Funktion til at filtrere vejrudsigter for kl. 12:00 for de næste 5 dage
   const getForecasts = (list) => {
     return list.filter((item) => item.dt_txt.includes("12:00:00")).slice(0, 5);
   };
 
-  // Function to select image based on weather description
+  // Funktion til at vælge billede baseret på vejrbeskrivelse
   const getImage = (description) => {
     if (description.includes("rain")) {
       return Rain;
@@ -78,21 +78,21 @@ export default function App() {
     } else if (description.includes("snow")) {
       return Snow;
     } else {
-      return Sky; // Default image if no conditions match
+      return Sky; // Standardbillede hvis ingen betingelser matcher
     }
   };
 
   return (
     <View style={styles.container}>
       <ScrollView>
-        {/* Search Field */}
+        {/* Søgefelt */}
         <Text style={styles.header}>Vejr App</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter city"
+          placeholder="Indtast by"
           value={city}
-          onChangeText={setCity} // Update city state on text change
-          onSubmitEditing={() => fetchWeather(city)} // Fetch weather data on Enter key press
+          onChangeText={setCity} // Opdaterer bynavn ved ændring
+          onSubmitEditing={() => fetchWeather(city)} // Henter vejrdata ved tryk på Enter
         />
 
         <TouchableOpacity
@@ -102,7 +102,7 @@ export default function App() {
           <Image source={Location} style={styles.locationImage} />
         </TouchableOpacity>
 
-        {/* Current Day Weather Forecast */}
+        {/* Vejrudsigt for nuværende dag */}
         <Card style={styles.card}>
           <Card.Content>
             {loading ? (
@@ -110,20 +110,20 @@ export default function App() {
                 animating={true}
                 size="large"
                 color="#1E90FF"
-              /> // Show loading if data is being fetched
+              /> // Viser indlæsning under hentning af data
             ) : weather ? (
               <View>
                 <Title style={styles.title}>
                   {weather.city.name}, {weather.city.country}
                 </Title>
-                {/* Flag Display */}
+                {/* Flagvisning */}
                 <Image
                   source={{
                     uri: `https://flagsapi.com/${weather.city.country}/shiny/64.png`,
                   }}
                   style={styles.flag}
                 />
-                {/* Flag Display END */}
+                {/* Flagvisning SLUT */}
                 <View style={styles.imageContainer}>
                   <Image
                     source={getImage(weather.list[1].weather[0].description)}
@@ -141,13 +141,13 @@ export default function App() {
                 </Paragraph>
               </View>
             ) : (
-              <Paragraph>Enter a city to get the weather.</Paragraph>
+              <Paragraph>Indtast en by for at få vejrudsigt.</Paragraph>
             )}
           </Card.Content>
         </Card>
-        {/* Current Day Weather Forecast END */}
+        {/* Vejrudsigt for nuværende dag SLUT */}
 
-        {/* Next 5 Days Weather Forecast */}
+        {/* Vejrudsigt for de næste 5 dage */}
         <View>
           {weather &&
             getForecasts(weather.list).map((item, index) => (
@@ -165,7 +165,7 @@ export default function App() {
               </Card>
             ))}
         </View>
-        {/* Next 5 Days Weather Forecast END */}
+        {/* Vejrudsigt for de næste 5 dage SLUT */}
       </ScrollView>
     </View>
   );
