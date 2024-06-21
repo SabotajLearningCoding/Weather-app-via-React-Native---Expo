@@ -17,24 +17,17 @@ import {
 } from "react-native-paper";
 import axios from "axios";
 
-export default function BackupApp() {
-  const [city, setCity] = useState("Fucking"); // Standardby indstillet til Fucking,Tyskland
+export default function App() {
+  const [city, setCity] = useState("Fucking"); // Standardby indstillet til Fucking, Østrig
   const [weather, setWeather] = useState(null); // Tilstand til at gemme vejrdata
   const [loading, setLoading] = useState(false); // Tilstand til at håndtere Loading
 
   // Importer billederne korrekt med require
-  const Sun_CloudAngledRain = () => (
-    <Image
-      source={require("./assets/forecast/big/Sun-cloud-angled-rain.png")}
-      style={styles.image}
-    />
-  );
-  const Sun_CloudMidRain = () => (
-    <Image
-      source={require("./assets/forecast/big/Sun-cloud-mid-rain.png")}
-      style={styles.image}
-    />
-  );
+  const Cloud = require("./assets/forecast/cloud.png");
+  const Rain = require("./assets/forecast/rain.png");
+  const Sun = require("./assets/forecast/sun.png");
+  const Snow = require("./assets/forecast/snow.png");
+  const Sky = require("./assets/forecast/clear-sky.png");
 
   // Funktion til at hente vejroplysninger fra OpenWeatherMap API
   const fetchWeather = async (city) => {
@@ -46,7 +39,7 @@ export default function BackupApp() {
           params: {
             q: city, // By navn
             appid: "8401040824d06dc01137a49ace1e6cb7", // API nøgle
-            units: "metric", // Enheder i metrisk system (så viser den graderne i °C istedet for °F, og afstand i meter/km istedet for feet/miles)
+            units: "metric", // Enheder i metrisk system
           },
         }
       );
@@ -62,7 +55,7 @@ export default function BackupApp() {
     }
   };
 
-  // Brug useEffekt hook til at hente vejrdata ved første indlæsning
+  // Brug useEffect hook til at hente vejrdata ved første indlæsning
   useEffect(() => {
     fetchWeather(city);
   }, []);
@@ -70,6 +63,21 @@ export default function BackupApp() {
   // Funktion til at filtrere vejrudsigter fra kl. 12:00 de næste 5 dage
   const getForecasts = (list) => {
     return list.filter((item) => item.dt_txt.includes("12:00:00")).slice(0, 5);
+  };
+
+  // Funktion til at vælge billede baseret på vejrets beskrivelse
+  const getImage = (description) => {
+    if (description.includes("rain")) {
+      return Rain;
+    } else if (description.includes("cloud")) {
+      return Cloud;
+    } else if (description.includes("sun")) {
+      return Sun;
+    } else if (description.includes("snow")) {
+      return Snow;
+    } else {
+      return Sky; // Default image if no conditions match
+    }
   };
 
   return (
@@ -105,14 +113,13 @@ export default function BackupApp() {
                 {/* Flag visning SLUT */}
                 <View style={styles.imageContainer}>
                   <Image
-                    source={require("././assets/forecast/big/Sun-cloud-angled-rain.png")}
+                    source={getImage(weather.list[1].weather[0].description)}
                     style={styles.image}
                   />
                 </View>
                 <Paragraph style={styles.paragraph}>
                   {`Temperatur: ${Math.round(weather.list[1].main.temp)}°C
                   \nBeskrivelse: ${weather.list[1].weather[0].description} 
-                  \n
                   \nH: ${Math.round(
                     weather.list[1].main.temp_max
                   )}°C - L: ${Math.round(weather.list[1].main.temp_min)}°C 
@@ -215,6 +222,5 @@ const styles = StyleSheet.create({
     left: 120,
     bottom: 75,
     width: 64,
-    backgroundColor: "#E90",
   },
 });

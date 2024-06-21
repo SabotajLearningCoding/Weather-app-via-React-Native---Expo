@@ -23,8 +23,11 @@ export default function App() {
   const [loading, setLoading] = useState(false); // Tilstand til at håndtere Loading
 
   // Importer billederne korrekt med require
-  const Sun_CloudAngledRain = require('./assets/forecast/big/Sun-cloud-angled-rain.png');
-  const Sun_CloudMidRain = require('./assets/forecast/big/Sun-cloud-mid-rain.png');
+  const Cloud = require('./assets/forecast/cloud.png');
+  const Rain = require('./assets/forecast/rain.png');
+  const Sun = require('./assets/forecast/sun.png');
+  const Snow = require('./assets/forecast/snow.png');
+  const Sky = require('./assets/forecast/clear-sky.png');
 
   // Funktion til at hente vejroplysninger fra OpenWeatherMap API
   const fetchWeather = async (city) => {
@@ -64,10 +67,16 @@ export default function App() {
 
   // Funktion til at vælge billede baseret på vejrets beskrivelse
   const getImage = (description) => {
-    if (description.includes("rain", "clouds")) {
-      return Sun_CloudAngledRain;
+    if (description.includes("rain")) {
+      return Rain;
+    } else if (description.includes("cloud")) {
+      return Cloud;
+    } else if (description.includes("sun")) {
+      return Sun;
+    } else if (description.includes("snow")) {
+      return Snow;
     } else {
-      return Sun_CloudMidRain;
+      return Sky; // Default image if no conditions match
     }
   };
 
