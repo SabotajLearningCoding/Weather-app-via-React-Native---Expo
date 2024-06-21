@@ -1,4 +1,3 @@
 # Ignorer specifikke filtyper
-*.min.js
-*.map
-*App.js
+*App.jsx
+*Backup.jsx

@@ -1,71 +1,73 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  Button,
-  Alert,
-  Image,
-} from "react-native";
-import {
-  Text,
-  Card,
-  Title,
-  Paragraph,
-  ActivityIndicator,
-} from "react-native-paper";
+import { View, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert, Image, } from "react-native";
+import { Text, Card, Title, Paragraph, ActivityIndicator, } from "react-native-paper";
 import axios from "axios";
 
 export default function App() {
-  const [city, setCity] = useState("Fucking"); // Standardby indstillet til Fucking, Østrig
-  const [weather, setWeather] = useState(null); // Tilstand til at gemme vejrdata
-  const [loading, setLoading] = useState(false); // Tilstand til at håndtere Loading
+  const [city, setCity] = useState(""); // Default city set to empty string
+  const [weather, setWeather] = useState(null); // State to store weather data
+  const [loading, setLoading] = useState(false); // State to handle loading
 
-  // Importer billederne korrekt med require
+  // Import images correctly with require
   const Cloud = require("./assets/forecast/cloud.png");
   const Rain = require("./assets/forecast/rain.png");
   const Sun = require("./assets/forecast/sun.png");
   const Snow = require("./assets/forecast/snow.png");
   const Sky = require("./assets/forecast/clear-sky.png");
+  const Location = require("./assets/location-pin.png");
 
-  // Funktion til at hente vejroplysninger fra OpenWeatherMap API
+  // Function to fetch weather data from OpenWeatherMap API
   const fetchWeather = async (city) => {
-    setLoading(true); // Start Loading
+    setLoading(true); // Start loading
     try {
       const response = await axios.get(
         "https://api.openweathermap.org/data/2.5/forecast/",
         {
           params: {
-            q: city, // By navn
-            appid: "8401040824d06dc01137a49ace1e6cb7", // API nøgle
-            units: "metric", // Enheder i metrisk system
+            q: city, // City name
+            appid: "8401040824d06dc01137a49ace1e6cb7", // API key
+            units: "metric", // Units in metric system
           },
         }
       );
-      setWeather(response.data); // Gem vejrdata i tilstanden
+      setWeather(response.data); // Store weather data in state
     } catch (error) {
       console.error(error);
       Alert.alert(
-        "Fejl",
-        "Kunne ikke hente vejroplysninger. Tjek bynavn og prøv igen."
+        "Error",
+        "Could not fetch weather information. Check city name and try again."
       );
     } finally {
-      setLoading(false); // Stop Loading
+      setLoading(false); // Stop loading
     }
   };
 
-  // Brug useEffect hook til at hente vejrdata ved første indlæsning
+  // Function to fetch location data based on IP address
+  const fetchLocation = async () => {
+    try {
+      const response = await axios.get(
+        "https://ipinfo.io/json?token=67977dadb97bd2"
+      );
+      const location = response.data;
+      setCity(location.city);
+      fetchWeather(location.city);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not fetch location information.");
+    }
+  };
+
+  // Use useEffect hook to fetch location and weather data on initial load
   useEffect(() => {
-    fetchWeather(city);
+    fetchLocation();
   }, []);
 
-  // Funktion til at filtrere vejrudsigter fra kl. 12:00 de næste 5 dage
+  // Function to filter forecasts for 12:00 PM for the next 5 days
   const getForecasts = (list) => {
     return list.filter((item) => item.dt_txt.includes("12:00:00")).slice(0, 5);
   };
 
-  // Funktion til at vælge billede baseret på vejrets beskrivelse
+  // Function to select image based on weather description
   const getImage = (description) => {
     if (description.includes("rain")) {
       return Rain;
@@ -83,34 +85,45 @@ export default function App() {
   return (
     <View style={styles.container}>
       <ScrollView>
-        {/* Søgefelt */}
+        {/* Search Field */}
         <Text style={styles.header}>Vejr App</Text>
         <TextInput
           style={styles.input}
-          placeholder="Indtast by"
+          placeholder="Enter city"
           value={city}
-          onChangeText={setCity} // Opdater by tilstand ved tekstændring
+          onChangeText={setCity} // Update city state on text change
+          onSubmitEditing={() => fetchWeather(city)} // Fetch weather data on Enter key press
         />
-        <Button title="Hent vejr" onPress={() => fetchWeather(city)} />
 
-        {/* Vejrudsigt for det nuværende dag */}
+        <TouchableOpacity
+          onPress={() => fetchLocation()}
+          style={styles.locationButton}
+        >
+          <Image source={Location} style={styles.locationImage} />
+        </TouchableOpacity>
+
+        {/* Current Day Weather Forecast */}
         <Card style={styles.card}>
           <Card.Content>
             {loading ? (
-              <ActivityIndicator animating={true} size="large" /> // Vis loading hvis data hentes
+              <ActivityIndicator
+                animating={true}
+                size="large"
+                color="#1E90FF"
+              /> // Show loading if data is being fetched
             ) : weather ? (
               <View>
                 <Title style={styles.title}>
                   {weather.city.name}, {weather.city.country}
                 </Title>
-                {/* Flag visning */}
+                {/* Flag Display */}
                 <Image
                   source={{
                     uri: `https://flagsapi.com/${weather.city.country}/shiny/64.png`,
                   }}
                   style={styles.flag}
                 />
-                {/* Flag visning SLUT */}
+                {/* Flag Display END */}
                 <View style={styles.imageContainer}>
                   <Image
                     source={getImage(weather.list[1].weather[0].description)}
@@ -120,9 +133,7 @@ export default function App() {
                 <Paragraph style={styles.paragraph}>
                   {`Temperatur: ${Math.round(weather.list[1].main.temp)}°C
                   \nBeskrivelse: ${weather.list[1].weather[0].description} 
-                  \nH: ${Math.round(
-                    weather.list[1].main.temp_max
-                  )}°C - L: ${Math.round(weather.list[1].main.temp_min)}°C 
+                  \nH: ${Math.round(weather.list[1].main.temp_max)}°C - L: ${Math.round(weather.list[1].main.temp_min)}°C 
                   \nFøles som: ${Math.round(weather.list[1].main.feels_like)}°C 
                   \nLuftfugtighed: ${weather.list[1].main.humidity}%
                   \nSigtbarhed: ${weather.list[1].visibility / 1000}km
@@ -130,13 +141,13 @@ export default function App() {
                 </Paragraph>
               </View>
             ) : (
-              <Paragraph>Indtast en by for at få vejret.</Paragraph>
+              <Paragraph>Enter a city to get the weather.</Paragraph>
             )}
           </Card.Content>
         </Card>
-        {/* Vejrudsigt for det nuværende dag SLUT */}
+        {/* Current Day Weather Forecast END */}
 
-        {/* Vejrudsigt for de næste 5 dage */}
+        {/* Next 5 Days Weather Forecast */}
         <View>
           {weather &&
             getForecasts(weather.list).map((item, index) => (
@@ -147,16 +158,14 @@ export default function App() {
                   </Title>
                   <Paragraph style={styles.paragraph}>
                     {`Temperatur: ${Math.round(item.main.temp)}°C
-                    \nH: ${Math.round(item.main.temp_max)}°C - L: ${Math.round(
-                      item.main.temp_min
-                    )}°C
+                    \nH: ${Math.round(item.main.temp_max)}°C - L: ${Math.round(item.main.temp_min)}°C
                     \nBeskrivelse: ${item.weather[0].description}`}
                   </Paragraph>
                 </Card.Content>
               </Card>
             ))}
         </View>
-        {/* Vejrudsigt for de næste 5 dage SLUT */}
+        {/* Next 5 Days Weather Forecast END */}
       </ScrollView>
     </View>
   );
@@ -168,18 +177,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: "15%",
-    paddingBottom: "15%",
+    paddingTop: "10%",
+    paddingBottom: "10%",
     paddingLeft: "5%",
     paddingRight: "5%",
-    backgroundColor: "#15719f",
+    backgroundColor: "#f0f0f0",
   },
   header: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#FFF",
+    color: "#1E90FF",
     marginBottom: 20,
-    marginHorizontal: "auto",
+    textAlign: "center",
   },
   input: {
     height: 40,
@@ -189,22 +198,38 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     width: "100%",
     backgroundColor: "white",
+    borderRadius: 5,
+  },
+  locationButton: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  locationImage: {
+    width: 64,
+    height: 64,
   },
   card: {
     minWidth: 330,
     marginTop: 20,
-    backgroundColor: "#62a1c7",
-    color: "#FFF",
-    borderColor: "#95d6ea",
-    borderWidth: "3px",
-    shadowOpacity: "0%",
+    backgroundColor: "#ffffff",
+    color: "#000",
+    borderColor: "#1E90FF",
+    borderWidth: 1,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 5,
   },
   title: {
     fontSize: 22,
     marginBottom: 10,
+    color: "#1E90FF",
   },
   paragraph: {
     fontSize: 18,
+    color: "#333",
   },
   flag: {
     width: 64,
@@ -212,15 +237,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   image: {
-    width: 64,
-    height: 64,
+    width: 100,
+    height: 100,
   },
   imageContainer: {
-    display: "flex",
-    flexDirection: "row",
-    position: "relative",
-    left: 120,
-    bottom: 75,
-    width: 64,
+    alignItems: "center",
+    marginBottom: 10,
   },
 });
