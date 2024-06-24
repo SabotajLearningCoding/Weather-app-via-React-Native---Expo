@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert, Image, } from "react-native";
-import { Text, Card, Title, Paragraph, ActivityIndicator, } from "react-native-paper";
+import { Text, Card, Title, Paragraph, ActivityIndicator, Button } from "react-native-paper";
 import axios from "axios";
 
 export default function App() {
   const [city, setCity] = useState(""); // Gemmer bynavnet
   const [weather, setWeather] = useState(null); // State til at gemme vejrdata
   const [loading, setLoading] = useState(false); // State til at håndtere indlæsning
+  const [showDetails, setShowDetails] = useState(false); // State til at vise/skjule detaljer
 
   // Importerer billeder korrekt med require
   const Cloud = require("./assets/forecast/cloud.png");
@@ -41,6 +42,7 @@ export default function App() {
       setLoading(false); // Stopper indlæsning
     }
   };
+
 
   // Funktion til at hente lokalitetsdata baseret på IP-adresse
   const fetchLocation = async () => {
@@ -131,14 +133,30 @@ export default function App() {
                   />
                 </View>
                 <Paragraph style={styles.paragraph}>
-                  {`Temperatur: ${Math.round(weather.list[1].main.temp)}°C
-                  \nBeskrivelse: ${weather.list[1].weather[0].description} 
-                  \nH: ${Math.round(weather.list[1].main.temp_max)}°C - L: ${Math.round(weather.list[1].main.temp_min)}°C 
-                  \nFøles som: ${Math.round(weather.list[1].main.feels_like)}°C 
-                  \nLuftfugtighed: ${weather.list[1].main.humidity}%
-                  \nSigtbarhed: ${weather.list[1].visibility / 1000}km
-                  \nVind: ${weather.list[1].wind.speed}m/s`}
+                  {`Temperatur: ${Math.round(weather.list[1].main.temp)}°C 
+                    \nH: ${Math.round(weather.list[1].main.temp_max)}°C - L: ${Math.round(weather.list[1].main.temp_min)}°C
+                    \nBeskrivelse: ${weather.list[1].weather[0].description}
+                  `}
                 </Paragraph>
+                {showDetails && (
+                  <View style={styles.detailsContainer}>
+                    <Text style={styles.paragraph}>
+                      {`
+                        \nFøles som: ${Math.round(weather.list[1].main.feels_like)}°C 
+                        \nLuftfugtighed: ${weather.list[1].main.humidity}%
+                        \nSigtbarhed: ${weather.list[1].visibility / 1000}km
+                        \nVind: ${weather.list[1].wind.speed}m/s
+                      `}
+                    </Text>
+                  </View>
+                )}
+                <Button
+                  mode="contained"
+                  onPress={() => setShowDetails(!showDetails)}
+                  style={styles.showMoreBtn}
+                >
+                  {showDetails ? "Skjul Detaljer" : "Vis Detaljer"}
+                </Button>
               </View>
             ) : (
               <Paragraph>Indtast en by for at få vejrudsigt.</Paragraph>
@@ -207,6 +225,10 @@ const styles = StyleSheet.create({
   locationImage: {
     width: 64,
     height: 64,
+  },
+  showMoreBtn: {
+    marginTop: 10,
+    backgroundColor: "#1E90FF",
   },
   card: {
     minWidth: 330,
