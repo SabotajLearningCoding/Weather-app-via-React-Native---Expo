@@ -128,14 +128,14 @@ export default function App() {
                 {/* Flagvisning SLUT */}
                 <View style={styles.imageContainer}>
                   <Image
-                    source={getImage(weather.list[1].weather[0].description)}
+                    source={getImage(weather.list[1].weather[0].main)}
                     style={styles.image}
                   />
                 </View>
                 <Paragraph style={styles.paragraph}>
                   {`Temperatur: ${Math.round(weather.list[1].main.temp)}°C 
                     \nH: ${Math.round(weather.list[1].main.temp_max)}°C - L: ${Math.round(weather.list[1].main.temp_min)}°C
-                    \nBeskrivelse: ${weather.list[1].weather[0].description}
+                    \nBeskrivelse: ${weather.list[1].weather[0].main}
                   `}
                 </Paragraph>
                 {showDetails && (
@@ -146,6 +146,8 @@ export default function App() {
                         \nLuftfugtighed: ${weather.list[1].main.humidity}%
                         \nSigtbarhed: ${weather.list[1].visibility / 1000}km
                         \nVind: ${weather.list[1].wind.speed}m/s
+                        \nVindstød: ${weather.list[1].wind.gust}m/s
+                        \nLufttryk: ${weather.list[1].main.pressure}hPa
                       `}
                     </Text>
                   </View>
