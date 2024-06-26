@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert, Image, } from "react-native";
-import { Text, Card, Title, Paragraph, ActivityIndicator, } from "react-native-paper";
+import { Text, Card, Title, Paragraph, ActivityIndicator, Button } from "react-native-paper";
 import axios from "axios";
 
 export default function App() {
   const [city, setCity] = useState(""); // Gemmer bynavnet
   const [weather, setWeather] = useState(null); // State til at gemme vejrdata
   const [loading, setLoading] = useState(false); // State til at håndtere indlæsning
+  const [showDetails, setShowDetails] = useState(false); // State til at vise/skjule detaljer
 
   // Importerer billeder korrekt med require
   const Cloud = require("./assets/forecast/cloud.png");
   const Rain = require("./assets/forecast/rain.png");
   const Sun = require("./assets/forecast/sun.png");
   const Snow = require("./assets/forecast/snow.png");
-  const Sky = require("./assets/forecast/clear-sky.png");
+  const Clear = require("./assets/forecast/clear-sky.png");
   const Location = require("./assets/location-pin.png");
 
   // Funktion til at hente vejrdata fra OpenWeatherMap API
@@ -41,6 +42,7 @@ export default function App() {
       setLoading(false); // Stopper indlæsning
     }
   };
+
 
   // Funktion til at hente lokalitetsdata baseret på IP-adresse
   const fetchLocation = async () => {
@@ -77,8 +79,11 @@ export default function App() {
       return Sun;
     } else if (description.includes("snow")) {
       return Snow;
-    } else {
-      return Sky; // Standardbillede hvis ingen betingelser matcher
+    } else if (description.includes("clear")) {
+      return Clear;
+    }
+    else {
+      return Clear; // Standardbillede hvis ingen betingelser matcher
     }
   };
 
@@ -126,19 +131,37 @@ export default function App() {
                 {/* Flagvisning SLUT */}
                 <View style={styles.imageContainer}>
                   <Image
-                    source={getImage(weather.list[1].weather[0].description)}
+                    source={getImage(weather.list[1].weather[0].main)}
                     style={styles.image}
                   />
                 </View>
                 <Paragraph style={styles.paragraph}>
-                  {`Temperatur: ${Math.round(weather.list[1].main.temp)}°C
-                  \nBeskrivelse: ${weather.list[1].weather[0].description} 
-                  \nH: ${Math.round(weather.list[1].main.temp_max)}°C - L: ${Math.round(weather.list[1].main.temp_min)}°C 
-                  \nFøles som: ${Math.round(weather.list[1].main.feels_like)}°C 
-                  \nLuftfugtighed: ${weather.list[1].main.humidity}%
-                  \nSigtbarhed: ${weather.list[1].visibility / 1000}km
-                  \nVind: ${weather.list[1].wind.speed}m/s`}
+                  {`Temperatur: ${Math.round(weather.list[1].main.temp)}°C 
+                    \nH: ${Math.round(weather.list[1].main.temp_max)}°C - L: ${Math.round(weather.list[1].main.temp_min)}°C
+                    \nBeskrivelse: ${weather.list[1].weather[0].main}
+                  `}
                 </Paragraph>
+                {showDetails && (
+                  <View style={styles.detailsContainer}>
+                    <Text style={styles.paragraph}>
+                      {`
+                        \nFøles som: ${Math.round(weather.list[1].main.feels_like)}°C 
+                        \nLuftfugtighed: ${weather.list[1].main.humidity}%
+                        \nSigtbarhed: ${weather.list[1].visibility / 1000}km
+                        \nVind: ${weather.list[1].wind.speed}m/s
+                        \nVindstød: ${weather.list[1].wind.gust}m/s
+                        \nLufttryk: ${weather.list[1].main.pressure}hPa
+                      `}
+                    </Text>
+                  </View>
+                )}
+                <Button
+                  mode="contained"
+                  onPress={() => setShowDetails(!showDetails)}
+                  style={styles.showMoreBtn}
+                >
+                  {showDetails ? "Skjul Detaljer" : "Vis Detaljer"}
+                </Button>
               </View>
             ) : (
               <Paragraph>Indtast en by for at få vejrudsigt.</Paragraph>
@@ -156,6 +179,12 @@ export default function App() {
                   <Title style={styles.title}>
                     {new Date(item.dt_txt).toLocaleDateString()}
                   </Title>
+                  <View style={styles.secondImageContainer}>
+                    <Image
+                      source={getImage(item.weather[0].description)}
+                      style={styles.secondImage}
+                    />
+                  </View>
                   <Paragraph style={styles.paragraph}>
                     {`Temperatur: ${Math.round(item.main.temp)}°C
                     \nH: ${Math.round(item.main.temp_max)}°C - L: ${Math.round(item.main.temp_min)}°C
@@ -208,6 +237,10 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
   },
+  showMoreBtn: {
+    marginTop: 10,
+    backgroundColor: "#1E90FF",
+  },
   card: {
     minWidth: 330,
     marginTop: 20,
@@ -236,12 +269,25 @@ const styles = StyleSheet.create({
     height: 64,
     marginBottom: 10,
   },
+  imageContainer: {
+    alignItems: "center",
+    marginBottom: 10,
+  },
   image: {
     width: 100,
     height: 100,
   },
-  imageContainer: {
-    alignItems: "center",
+  secondImageContainer: {
+    position: "relative",
     marginBottom: 10,
+    backgroundColor: "#1E90AA",
+    maxWidth: 50,
+    maxHeight: 50,
+    left: 180,
+    top: 70,
+  },
+  secondImage: {
+    width: 50,
+    height: 50,
   },
 });

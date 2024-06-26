@@ -14,7 +14,7 @@ export default function App() {
   const Rain = require("./assets/forecast/rain.png");
   const Sun = require("./assets/forecast/sun.png");
   const Snow = require("./assets/forecast/snow.png");
-  const Sky = require("./assets/forecast/clear-sky.png");
+  const Clear = require("./assets/forecast/clear-sky.png");
   const Location = require("./assets/location-pin.png");
 
   // Funktion til at hente vejrdata fra OpenWeatherMap API
@@ -79,8 +79,11 @@ export default function App() {
       return Sun;
     } else if (description.includes("snow")) {
       return Snow;
-    } else {
-      return Sky; // Standardbillede hvis ingen betingelser matcher
+    } else if (description.includes("clear")) {
+      return Clear;
+    }
+    else {
+      return Clear; // Standardbillede hvis ingen betingelser matcher
     }
   };
 
@@ -176,6 +179,12 @@ export default function App() {
                   <Title style={styles.title}>
                     {new Date(item.dt_txt).toLocaleDateString()}
                   </Title>
+                  <View style={styles.secondImageContainer}>
+                    <Image
+                      source={getImage(item.weather[0].description)}
+                      style={styles.secondImage}
+                    />
+                  </View>
                   <Paragraph style={styles.paragraph}>
                     {`Temperatur: ${Math.round(item.main.temp)}°C
                     \nH: ${Math.round(item.main.temp_max)}°C - L: ${Math.round(item.main.temp_min)}°C
@@ -260,12 +269,25 @@ const styles = StyleSheet.create({
     height: 64,
     marginBottom: 10,
   },
+  imageContainer: {
+    alignItems: "center",
+    marginBottom: 10,
+  },
   image: {
     width: 100,
     height: 100,
   },
-  imageContainer: {
-    alignItems: "center",
+  secondImageContainer: {
+    position: "relative",
     marginBottom: 10,
+    backgroundColor: "#1E90AA",
+    maxWidth: 50,
+    maxHeight: 50,
+    left: 180,
+    top: 70,
+  },
+  secondImage: {
+    width: 50,
+    height: 50,
   },
 });
