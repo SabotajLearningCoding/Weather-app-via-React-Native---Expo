@@ -2,9 +2,9 @@
 
 // Importerer nødvendige komponenter og biblioteker fra React Native.
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert, Image } from "react-native";
+import { View, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert, Image, RefreshControl } from "react-native";
 import { Text, Card, Title, Paragraph, ActivityIndicator, Button } from "react-native-paper";
-import axios from "axios"; // Importerer Axios til HTTP-anmodninger.
+import axios from "axios"; // Importerer Axios
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importerer AsyncStorage til lokal datalagring.
 
 // Hovedfunktionen for hjemmeskærmen.
@@ -13,6 +13,8 @@ export default function HomeScreen({ navigation }) {
   const [weather, setWeather] = useState(null); // Tilstand til at gemme vejrdata.
   const [loading, setLoading] = useState(false); // Tilstand til at håndtere indlæsning.
   const [showDetails, setShowDetails] = useState(false); // Tilstand til at vise/skjule detaljer.
+  const [refreshing, setRefreshing] = useState(false);
+
 
   // Importerer billeder korrekt med require.
   const Cloud = require("./assets/forecast/cloud.png");
@@ -22,6 +24,13 @@ export default function HomeScreen({ navigation }) {
   const Clear = require("./assets/forecast/clear-sky.png");
   const Location = require("./assets/location-pin.png");
   const Add = require("./assets/add.png");
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchLocation(); // Fetch location and weather data
+    setRefreshing(false);
+  };
+
 
   // Funktion til at hente vejrdata fra OpenWeatherMap API.
   const fetchWeather = async (city) => {
@@ -126,7 +135,9 @@ export default function HomeScreen({ navigation }) {
   // Returnerer JSX (brugergrænseflade) til visning i appen.
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }>
         <Title style={styles.header}>Vejr App</Title>
 
         {/* Søgefelt */}
