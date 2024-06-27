@@ -22,7 +22,6 @@ export default function HomeScreen({ navigation }) {
   const Clear = require("./assets/forecast/clear-sky.png");
   const Location = require("./assets/location-pin.png");
   const Add = require("./assets/add.png");
-  const Remove = require("./assets/remove.png");
 
   // Funktion til at hente vejrdata fra OpenWeatherMap API.
   const fetchWeather = async (city) => {
@@ -68,20 +67,6 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  // Funktion til at fjerne gemt bynavn fra AsyncStorage.
-  const unsaveLocation = async () => {
-    try {
-      const storedCities = await AsyncStorage.getItem('savedCities');
-      const cities = storedCities ? JSON.parse(storedCities) : []; // Tjekker om der er gemte byer i AsyncStorage.
-      const newCities = cities.filter(savedCity => savedCity !== city); // Fjerner den valgte by fra listen af gemte byer.
-      await AsyncStorage.setItem('savedCities', JSON.stringify(newCities)); // Opdaterer AsyncStorage med den nye liste.
-      Alert.alert('Success', `${city} er blevet fjernet.`);
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Fejl', 'Kunne ikke fjerne byen.');
-    }
-  };
-
   // Funktion til at hente lokalitetsdata baseret på IP-adresse.
   const fetchLocation = async () => {
     try {
@@ -102,9 +87,23 @@ export default function HomeScreen({ navigation }) {
     fetchLocation();
   }, []);
 
-  // Funktion til at filtrere vejrudsigter for kl. 12:00 for de næste 5 dage.
+  // Funktion til filtrering af vejrudsigt for kl. 12:00 for de næste 5 dage.
   const getForecasts = (list) => {
-    return list.filter((item) => item.dt_txt.includes("12:00:00")).slice(0, 5);
+    // Funktion til at formatere datoen og inkludere dagens navn
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString('da-DK', options); // Returnerer dato i formatet "Mandag, 28. juni 2024"
+    };
+
+    // Filtrer vejrudsigt for kl. 12:00 og hent de første 5 dage
+    return list
+      .filter((item) => item.dt_txt.includes("12:00:00"))
+      .slice(0, 5)
+      .map((item) => ({
+        ...item,
+        formattedDate: formatDate(item.dt_txt), // Tilføjer formatteret dato med dagens navn
+      }));
   };
 
   // Funktion til at vælge billede baseret på vejrbeskrivelse.
@@ -146,9 +145,6 @@ export default function HomeScreen({ navigation }) {
             <Image source={Add} style={styles.saveImage} />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={unsaveLocation} style={styles.unsaveButton}>
-            <Image source={Remove} style={styles.unsaveImage} />
-          </TouchableOpacity>
           <TouchableOpacity
             onPress={fetchLocation}
             style={styles.locationButton}
@@ -226,12 +222,13 @@ export default function HomeScreen({ navigation }) {
 
         {/* Vejrudsigt for de næste 5 dage */}
         <View>
+          <Title style={styles.vejrudsigtTitle}>Vejrudsigt for de næste 5 dage</Title>
           {weather &&
             getForecasts(weather.list).map((item, index) => (
               <Card key={index} style={styles.card}>
                 <Card.Content>
                   <Title style={styles.title}>
-                    {new Date(item.dt_txt).toLocaleDateString()}
+                    {item.formattedDate}
                   </Title>
                   <View style={styles.secondImageContainer}>
                     <Image
@@ -323,6 +320,13 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
   },
+  vejrudsigtTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1E90FF",
+    marginTop: 50,
+    textAlign: "center",
+  },
   secondImageContainer: {
     position: "relative",
     marginBottom: 10,
@@ -338,7 +342,7 @@ const styles = StyleSheet.create({
 
   saveSection: {
     display: "flex",
-    gap: 10,
+    gap: 40,
     flexDirection: "row",
     maxWidth: "auto",
     maxHeight: 50,
@@ -361,11 +365,5 @@ const styles = StyleSheet.create({
   showSavedBtn: {
     backgroundColor: "#1E90FF",
   },
-  unsaveButton: {
-    marginBottom: 20,
-  },
-  unsaveImage: {
-    width: 50,
-    height: 50,
-  },
 });
+
