@@ -1,12 +1,11 @@
+// HomeScreen.js
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert, Image, } from "react-native";
+import { View, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert, Image } from "react-native";
 import { Text, Card, Title, Paragraph, ActivityIndicator, Button } from "react-native-paper";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-
-export default function App() {
+export default function HomeScreen({ navigation }) {
   const [city, setCity] = useState(""); // Gemmer bynavnet
   const [weather, setWeather] = useState(null); // State til at gemme vejrdata
   const [loading, setLoading] = useState(false); // State til at håndtere indlæsning
@@ -48,6 +47,37 @@ export default function App() {
     }
   };
 
+  // Funktion til at gemme bynavn i AsyncStorage
+  const saveLocation = async () => {
+    try {
+      const storedCities = await AsyncStorage.getItem('savedCities');
+      const cities = storedCities ? JSON.parse(storedCities) : [];
+      if (!cities.includes(city)) {
+        cities.push(city);
+        await AsyncStorage.setItem('savedCities', JSON.stringify(cities));
+        Alert.alert('Success', `${city} has been saved.`);
+      } else {
+        Alert.alert('Notice', `${city} is already saved.`);
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Could not save the city.');
+    }
+  };
+
+  // Funktion til at fjerne gemt bynavn fra AsyncStorage
+  const unsaveLocation = async () => {
+    try {
+      const storedCities = await AsyncStorage.getItem('savedCities');
+      const cities = storedCities ? JSON.parse(storedCities) : [];
+      const newCities = cities.filter(savedCity => savedCity !== city);
+      await AsyncStorage.setItem('savedCities', JSON.stringify(newCities));
+      Alert.alert('Success', `${city} has been removed.`);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Could not remove the city.');
+    }
+  };
 
   // Funktion til at hente lokalitetsdata baseret på IP-adresse
   const fetchLocation = async () => {
@@ -86,26 +116,16 @@ export default function App() {
       return Snow;
     } else if (description.includes("clear")) {
       return Clear;
-    }
-    else {
+    } else {
       return Clear; // Standardbillede hvis ingen betingelser matcher
     }
   };
 
   return (
+
     <View style={styles.container}>
       <ScrollView>
         <Title style={styles.header}>Vejr App</Title>
-
-        {/* Save Country */}
-        <TouchableOpacity onPress={() => saveLocation()} style={styles.locationButton}>
-          <Image source={Add} style={styles.locationImage} />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => unsaveLocation()} style={styles.locationButton}>
-          <Image source={Remove} style={styles.locationImage} />
-        </TouchableOpacity>
-        {/* Save Country */}
 
         {/* Søgefelt */}
         <TextInput
@@ -117,12 +137,28 @@ export default function App() {
         />
         {/* Søgefelt SLUT */}
 
-        <TouchableOpacity
-          onPress={() => fetchLocation()}
-          style={styles.locationButton}
-        >
-          <Image source={Location} style={styles.locationImage} />
-        </TouchableOpacity>
+        {/* Gem by */}
+        <View style={styles.saveSection}>
+          <TouchableOpacity onPress={saveLocation} style={styles.saveButton}>
+            <Image source={Add} style={styles.saveImage} />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={unsaveLocation} style={styles.unsaveButton}>
+            <Image source={Remove} style={styles.unsaveImage} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={fetchLocation}
+            style={styles.locationButton}
+          >
+            <Image source={Location} style={styles.locationImage} />
+          </TouchableOpacity>
+          <Button mode="contained" onPress={() => navigation.navigate('SavedCountries')} style={styles.showSavedBtn}>
+            Vis gemte byer
+          </Button>
+        </View>
+        {/* Gem by */}
+
+
 
         {/* Vejrudsigt for nuværende dag */}
         <Card style={styles.card}>
@@ -246,14 +282,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 5,
   },
-  locationButton: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  locationImage: {
-    width: 64,
-    height: 64,
-  },
   showMoreBtn: {
     marginTop: 10,
     backgroundColor: "#1E90FF",
@@ -303,6 +331,42 @@ const styles = StyleSheet.create({
     top: 70,
   },
   secondImage: {
+    width: 50,
+    height: 50,
+  },
+
+
+  saveSection: {
+    display: "flex",
+    gap: 10,
+    flexDirection: "row",
+    maxWidth: "auto",
+    maxHeight: 50,
+  },
+  locationButton: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  locationImage: {
+    width: 50,
+    height: 50,
+  },
+  saveButton: {
+    marginBottom: 20,
+  },
+  saveImage: {
+    width: 50,
+    height: 50,
+  },
+  showSavedBtn: {
+    backgroundColor: "#1E90FF",
+  },
+
+
+  unsaveButton: {
+    marginBottom: 20,
+  },
+  unsaveImage: {
     width: 50,
     height: 50,
   },
