@@ -72,7 +72,6 @@ export default function SavedCountriesScreen() {
     return (
         <View style={styles.container}>
             <ScrollView>
-                <Title style={styles.header}>Gemte Byer</Title>
                 {loading ? (
                     <ActivityIndicator animating={true} size="large" color="#1E90FF" />
                 ) : (
@@ -90,14 +89,10 @@ export default function SavedCountriesScreen() {
                                         style={styles.flag}
                                     />
                                     <View style={styles.imageContainer}>
-                                        <Image
-                                            source={getImage(weatherData[city].weather[0].main)}
-                                            style={styles.image}
-                                        />
+                                        <Image source={getImage(weatherData[city].weather[0].description)} style={styles.image} />
                                     </View>
                                     <Paragraph style={styles.paragraph}>
-                                        {`
-                                        Temperature: ${Math.round(weatherData[city].main.temp)}°C 
+                                        {`Temperature: ${Math.round(weatherData[city].main.temp)}°C 
                                         \nH: ${Math.round(weatherData[city].main.temp_max)}°C - L: ${Math.round(weatherData[city].main.temp_min)}°C
                                         \nDescription: ${weatherData[city].weather[0].main}
                                         `}
@@ -124,13 +119,6 @@ const styles = StyleSheet.create({
         paddingRight: "5%",
         backgroundColor: "#f0f0f0",
     },
-    header: {
-        fontSize: 28,
-        fontWeight: "bold",
-        color: "#1E90FF",
-        marginBottom: 20,
-        textAlign: "center",
-    },
     card: {
         minWidth: 330,
         marginTop: 20,
@@ -143,7 +131,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 8,
-        elevation: 5,
+        elevation: 10,
     },
     title: {
         fontSize: 22,
@@ -157,11 +145,13 @@ const styles = StyleSheet.create({
     flag: {
         width: 64,
         height: 64,
-        marginBottom: 10,
     },
     imageContainer: {
-        alignItems: "center",
-        marginBottom: 10,
+        position: "relative",
+        maxWidth: 100,
+        maxHeight: 100,
+        left: 180,
+        top: 90,
     },
     image: {
         width: 100,

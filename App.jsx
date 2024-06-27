@@ -12,7 +12,7 @@ function App() {
         <NavigationContainer>
             <Stack.Navigator initialRouteName="Home">
                 <Stack.Screen name="Home" component={HomeScreen} />
-                <Stack.Screen name="SavedCountries" component={SavedCountriesScreen} />
+                <Stack.Screen name="Gemte Byer" component={SavedCountriesScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

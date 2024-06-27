@@ -152,7 +152,7 @@ export default function HomeScreen({ navigation }) {
           >
             <Image source={Location} style={styles.locationImage} />
           </TouchableOpacity>
-          <Button mode="contained" onPress={() => navigation.navigate('SavedCountries')} style={styles.showSavedBtn}>
+          <Button mode="contained" onPress={() => navigation.navigate('Gemte Byer')} style={styles.showSavedBtn}>
             Vis gemte byer
           </Button>
         </View>
@@ -184,7 +184,7 @@ export default function HomeScreen({ navigation }) {
                 {/* Flagvisning SLUT */}
                 <View style={styles.imageContainer}>
                   <Image
-                    source={getImage(weather.list[1].weather[0].main)}
+                    source={getImage(weather.list[1].weather[0].description)}
                     style={styles.image}
                   />
                 </View>
