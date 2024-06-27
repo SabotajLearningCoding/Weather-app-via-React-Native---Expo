@@ -1,17 +1,20 @@
 // HomeScreen.js
+
+// Importerer nødvendige komponenter og biblioteker fra React Native.
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert, Image } from "react-native";
 import { Text, Card, Title, Paragraph, ActivityIndicator, Button } from "react-native-paper";
-import axios from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios"; // Importerer Axios til HTTP-anmodninger.
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importerer AsyncStorage til lokal datalagring.
 
+// Hovedfunktionen for hjemmeskærmen.
 export default function HomeScreen({ navigation }) {
-  const [city, setCity] = useState(""); // Gemmer bynavnet
-  const [weather, setWeather] = useState(null); // State til at gemme vejrdata
-  const [loading, setLoading] = useState(false); // State til at håndtere indlæsning
-  const [showDetails, setShowDetails] = useState(false); // State til at vise/skjule detaljer
+  const [city, setCity] = useState(""); // Tilstand til at gemme bynavnet.
+  const [weather, setWeather] = useState(null); // Tilstand til at gemme vejrdata.
+  const [loading, setLoading] = useState(false); // Tilstand til at håndtere indlæsning.
+  const [showDetails, setShowDetails] = useState(false); // Tilstand til at vise/skjule detaljer.
 
-  // Importerer billeder korrekt med require
+  // Importerer billeder korrekt med require.
   const Cloud = require("./assets/forecast/cloud.png");
   const Rain = require("./assets/forecast/rain.png");
   const Sun = require("./assets/forecast/sun.png");
@@ -21,21 +24,21 @@ export default function HomeScreen({ navigation }) {
   const Add = require("./assets/add.png");
   const Remove = require("./assets/remove.png");
 
-  // Funktion til at hente vejrdata fra OpenWeatherMap API
+  // Funktion til at hente vejrdata fra OpenWeatherMap API.
   const fetchWeather = async (city) => {
-    setLoading(true); // Starter indlæsning
+    setLoading(true); // Starter indlæsning.
     try {
       const response = await axios.get(
         "https://api.openweathermap.org/data/2.5/forecast/",
         {
           params: {
-            q: city, // Bynavn
-            appid: "8401040824d06dc01137a49ace1e6cb7", // API-nøgle
-            units: "metric", // Enheder i metrisk system
+            q: city, // Bynavn.
+            appid: "8401040824d06dc01137a49ace1e6cb7", // API-nøgle.
+            units: "metric", // Enheder i metrisk system.
           },
         }
       );
-      setWeather(response.data); // Gemmer vejrdata i state
+      setWeather(response.data); // Gemmer vejrdata i tilstand.
     } catch (error) {
       console.error(error);
       Alert.alert(
@@ -43,68 +46,68 @@ export default function HomeScreen({ navigation }) {
         "Kunne ikke hente vejrinformation. Tjek bynavnet og prøv igen."
       );
     } finally {
-      setLoading(false); // Stopper indlæsning
+      setLoading(false); // Stopper indlæsning.
     }
   };
 
-  // Funktion til at gemme bynavn i AsyncStorage
+  // Funktion til at gemme bynavn i AsyncStorage.
   const saveLocation = async () => {
     try {
       const storedCities = await AsyncStorage.getItem('savedCities');
-      const cities = storedCities ? JSON.parse(storedCities) : [];
-      if (!cities.includes(city)) {
+      const cities = storedCities ? JSON.parse(storedCities) : []; // Tjekker om der er gemte byer i AsyncStorage.
+      if (!cities.includes(city)) { // Hvis byen ikke allerede er gemt.
         cities.push(city);
-        await AsyncStorage.setItem('savedCities', JSON.stringify(cities));
-        Alert.alert('Success', `${city} has been saved.`);
+        await AsyncStorage.setItem('savedCities', JSON.stringify(cities)); // Gemmer byen i AsyncStorage.
+        Alert.alert('Success', `${city} er blevet gemt.`);
       } else {
-        Alert.alert('Notice', `${city} is already saved.`);
+        Alert.alert('Bemærk', `${city} er allerede gemt.`);
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Could not save the city.');
+      Alert.alert('Fejl', 'Kunne ikke gemme byen.');
     }
   };
 
-  // Funktion til at fjerne gemt bynavn fra AsyncStorage
+  // Funktion til at fjerne gemt bynavn fra AsyncStorage.
   const unsaveLocation = async () => {
     try {
       const storedCities = await AsyncStorage.getItem('savedCities');
-      const cities = storedCities ? JSON.parse(storedCities) : [];
-      const newCities = cities.filter(savedCity => savedCity !== city);
-      await AsyncStorage.setItem('savedCities', JSON.stringify(newCities));
-      Alert.alert('Success', `${city} has been removed.`);
+      const cities = storedCities ? JSON.parse(storedCities) : []; // Tjekker om der er gemte byer i AsyncStorage.
+      const newCities = cities.filter(savedCity => savedCity !== city); // Fjerner den valgte by fra listen af gemte byer.
+      await AsyncStorage.setItem('savedCities', JSON.stringify(newCities)); // Opdaterer AsyncStorage med den nye liste.
+      Alert.alert('Success', `${city} er blevet fjernet.`);
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Could not remove the city.');
+      Alert.alert('Fejl', 'Kunne ikke fjerne byen.');
     }
   };
 
-  // Funktion til at hente lokalitetsdata baseret på IP-adresse
+  // Funktion til at hente lokalitetsdata baseret på IP-adresse.
   const fetchLocation = async () => {
     try {
       const response = await axios.get(
         "https://ipinfo.io/json?token=67977dadb97bd2"
       );
       const location = response.data;
-      setCity(location.city);
-      fetchWeather(location.city);
+      setCity(location.city); // Opdaterer bynavnet baseret på IP-adressens lokalitet.
+      fetchWeather(location.city); // Henter vejrdata for den pågældende by.
     } catch (error) {
       console.error(error);
       Alert.alert("Fejl", "Kunne ikke hente lokalitetsinformation.");
     }
   };
 
-  // Bruger useEffect-hook til at hente lokalitet og vejrdata ved indledende indlæsning
+  // Bruger useEffect-hook til at hente lokalitet og vejrdata ved indledende indlæsning.
   useEffect(() => {
     fetchLocation();
   }, []);
 
-  // Funktion til at filtrere vejrudsigter for kl. 12:00 for de næste 5 dage
+  // Funktion til at filtrere vejrudsigter for kl. 12:00 for de næste 5 dage.
   const getForecasts = (list) => {
     return list.filter((item) => item.dt_txt.includes("12:00:00")).slice(0, 5);
   };
 
-  // Funktion til at vælge billede baseret på vejrbeskrivelse
+  // Funktion til at vælge billede baseret på vejrbeskrivelse.
   const getImage = (description) => {
     if (description.includes("rain")) {
       return Rain;
@@ -117,12 +120,12 @@ export default function HomeScreen({ navigation }) {
     } else if (description.includes("clear")) {
       return Clear;
     } else {
-      return Clear; // Standardbillede hvis ingen betingelser matcher
+      return Clear; // Standardbillede hvis ingen betingelser matcher.
     }
   };
 
+  // Returnerer JSX (brugergrænseflade) til visning i appen.
   return (
-
     <View style={styles.container}>
       <ScrollView>
         <Title style={styles.header}>Vejr App</Title>
@@ -132,8 +135,8 @@ export default function HomeScreen({ navigation }) {
           style={styles.input}
           placeholder="Indtast by"
           value={city}
-          onChangeText={setCity} // Opdaterer bynavn ved ændring
-          onSubmitEditing={() => fetchWeather(city)} // Henter vejrdata ved tryk på Enter
+          onChangeText={setCity} // Opdaterer bynavn ved ændring.
+          onSubmitEditing={() => fetchWeather(city)} // Henter vejrdata ved tryk på Enter.
         />
         {/* Søgefelt SLUT */}
 
@@ -158,8 +161,6 @@ export default function HomeScreen({ navigation }) {
         </View>
         {/* Gem by */}
 
-
-
         {/* Vejrudsigt for nuværende dag */}
         <Card style={styles.card}>
           <Card.Content>
@@ -168,7 +169,7 @@ export default function HomeScreen({ navigation }) {
                 animating={true}
                 size="large"
                 color="#1E90FF"
-              /> // Viser indlæsning under hentning af data
+              /> // Viser indlæsning under hentning af data.
             ) : weather ? (
               <View>
                 <Title style={styles.title}>
@@ -253,7 +254,7 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-// React Native CSS
+// Stildefinitioner (CSS) for komponenten.
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -335,7 +336,6 @@ const styles = StyleSheet.create({
     height: 50,
   },
 
-
   saveSection: {
     display: "flex",
     gap: 10,
@@ -361,8 +361,6 @@ const styles = StyleSheet.create({
   showSavedBtn: {
     backgroundColor: "#1E90FF",
   },
-
-
   unsaveButton: {
     marginBottom: 20,
   },
